@@ -161,40 +161,40 @@ scaler = GradScaler()  # Added: GradScaler for mixed precision
 # -----------------------
 # 5. Start Training (with AMP)
 # -----------------------
-
-for epoch in range(num_epochs):
-    model.train()
-    running_loss = 0.0
-
-    # Use tqdm to show epoch progress
-    for batch_idx, (anchor, positive, negative) in enumerate(tqdm(dataloader, desc=f"Epoch {epoch+1}/{num_epochs}")):
-        anchor = anchor.to(device)
-        positive = positive.to(device)
-        negative = negative.to(device)
-
-        optimizer.zero_grad()
-
-        with autocast():  # Use mixed precision
-            anchor_embed = model(anchor)
-            positive_embed = model(positive)
-            negative_embed = model(negative)
-
-            loss = triplet_loss(anchor_embed, positive_embed, negative_embed)
-
-        scaler.scale(loss).backward()
-        scaler.step(optimizer)
-        scaler.update()
-
-        running_loss += loss.item()
-
-    avg_loss = running_loss / len(dataloader)
-    print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}")
-
-
-# -----------------------
-# 6. Save Model
-# -----------------------
-
-save_path = 'tile2vec_model.pth'
-torch.save(model.state_dict(), save_path)
-print(f"Model saved to {save_path}")
+if __name__ == '__main__':
+    for epoch in range(num_epochs):
+        model.train()
+        running_loss = 0.0
+    
+        # Use tqdm to show epoch progress
+        for batch_idx, (anchor, positive, negative) in enumerate(tqdm(dataloader, desc=f"Epoch {epoch+1}/{num_epochs}")):
+            anchor = anchor.to(device)
+            positive = positive.to(device)
+            negative = negative.to(device)
+    
+            optimizer.zero_grad()
+    
+            with autocast():  # Use mixed precision
+                anchor_embed = model(anchor)
+                positive_embed = model(positive)
+                negative_embed = model(negative)
+    
+                loss = triplet_loss(anchor_embed, positive_embed, negative_embed)
+    
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+    
+            running_loss += loss.item()
+    
+        avg_loss = running_loss / len(dataloader)
+        print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}")
+    
+    
+    # -----------------------
+    # 6. Save Model
+    # -----------------------
+    
+    save_path = 'tile2vec_model.pth'
+    torch.save(model.state_dict(), save_path)
+    print(f"Model saved to {save_path}")
