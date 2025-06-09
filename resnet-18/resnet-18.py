@@ -97,75 +97,75 @@ def extract_features_batch(df, include_target=True, batch_size=64):
     else:
         return features, names
 
-
-# ==== Extract Features for Train and Test Sets ====
-X_train, y_train, _ = extract_features_batch(train_df, include_target=True)
-X_test, test_image_names = extract_features_batch(test_df, include_target=False)
-
-# ==== XGBoost Regressor ====
-
-regressor = XGBRegressor(
-    n_estimators=500,
-    learning_rate=0.05,
-    max_depth=7,
-    subsample=0.8,
-    colsample_bytree=0.8,
-    random_state=42,
-    tree_method="hist",
-    device="cuda" if torch.cuda.is_available() else "cpu"
-)
-
-regressor.fit(X_train, y_train)
-
-# ==== Prediction ====
-y_pred = regressor.predict(X_test)
-
-# ==== Save Results ====
-result_df = pd.DataFrame({
-    "image_name": test_image_names,
-    "y_prediction": y_pred
-})
-
-# Merge with ground truth if available
-if target_variable in test_df.columns:
-    result_df = result_df.merge(test_df[["image_name", target_variable]], on="image_name", how="left")
-    result_df.rename(columns={target_variable: "y_true"}, inplace=True)
-
-# Save CSV
-output_path = os.path.join("data", "downstream_task", "Adelaide_res", f"predicted_test_{target_variable}.csv")
-result_df.to_csv(output_path, index=False)
-print(f"\n✅ Prediction results saved to: {output_path}")
-
-# ==== Evaluation ====
-if "y_true" in result_df.columns:
-    y_true = result_df["y_true"].values
-    r2 = r2_score(y_true, y_pred)
-    mse = mean_squared_error(y_true, y_pred)
-    rmse = mse ** 0.5
-    mae = mean_absolute_error(y_true, y_pred)
-
-    print("\n📊 Evaluation Metrics:")
-    print(f"R² Score  : {r2:.4f}")
-    print(f"RMSE      : {rmse:.4f}")
-    print(f"MAE       : {mae:.4f}")
-
-    # ==== Save Evaluation Results ====
-    eval_file = os.path.join("data", "downstream_task", "Adelaide_evaluation_metrics.csv")
-    result_row = pd.DataFrame([{
-        "target_variable": target_variable,
-        "R2": round(r2, 4),
-        "RMSE": round(rmse, 4),
-        "MAE": round(mae, 4)
-    }])
-
-    if os.path.exists(eval_file):
-        existing = pd.read_csv(eval_file)
-        # Update existing or append new
-        existing = existing[existing["target_variable"] != target_variable]
-        combined = pd.concat([existing, result_row], ignore_index=True)
-    else:
-        combined = result_row
-
-    combined.to_csv(eval_file, index=False)
-    print(f"📄 Evaluation results saved to: {eval_file}")
+if __name__ == '__main__':
+    # ==== Extract Features for Train and Test Sets ====
+    X_train, y_train, _ = extract_features_batch(train_df, include_target=True)
+    X_test, test_image_names = extract_features_batch(test_df, include_target=False)
+    
+    # ==== XGBoost Regressor ====
+    
+    regressor = XGBRegressor(
+        n_estimators=500,
+        learning_rate=0.05,
+        max_depth=7,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        random_state=42,
+        tree_method="hist",
+        device="cuda" if torch.cuda.is_available() else "cpu"
+    )
+    
+    regressor.fit(X_train, y_train)
+    
+    # ==== Prediction ====
+    y_pred = regressor.predict(X_test)
+    
+    # ==== Save Results ====
+    result_df = pd.DataFrame({
+        "image_name": test_image_names,
+        "y_prediction": y_pred
+    })
+    
+    # Merge with ground truth if available
+    if target_variable in test_df.columns:
+        result_df = result_df.merge(test_df[["image_name", target_variable]], on="image_name", how="left")
+        result_df.rename(columns={target_variable: "y_true"}, inplace=True)
+    
+    # Save CSV
+    output_path = os.path.join("data", "downstream_task", "Adelaide_res", f"predicted_test_{target_variable}.csv")
+    result_df.to_csv(output_path, index=False)
+    print(f"\n✅ Prediction results saved to: {output_path}")
+    
+    # ==== Evaluation ====
+    if "y_true" in result_df.columns:
+        y_true = result_df["y_true"].values
+        r2 = r2_score(y_true, y_pred)
+        mse = mean_squared_error(y_true, y_pred)
+        rmse = mse ** 0.5
+        mae = mean_absolute_error(y_true, y_pred)
+    
+        print("\n📊 Evaluation Metrics:")
+        print(f"R² Score  : {r2:.4f}")
+        print(f"RMSE      : {rmse:.4f}")
+        print(f"MAE       : {mae:.4f}")
+    
+        # ==== Save Evaluation Results ====
+        eval_file = os.path.join("data", "downstream_task", "Adelaide_evaluation_metrics.csv")
+        result_row = pd.DataFrame([{
+            "target_variable": target_variable,
+            "R2": round(r2, 4),
+            "RMSE": round(rmse, 4),
+            "MAE": round(mae, 4)
+        }])
+    
+        if os.path.exists(eval_file):
+            existing = pd.read_csv(eval_file)
+            # Update existing or append new
+            existing = existing[existing["target_variable"] != target_variable]
+            combined = pd.concat([existing, result_row], ignore_index=True)
+        else:
+            combined = result_row
+    
+        combined.to_csv(eval_file, index=False)
+        print(f"📄 Evaluation results saved to: {eval_file}")
 
