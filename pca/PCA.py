@@ -29,7 +29,7 @@ for city in tqdm(cities, desc="Iterating over cities"):
         # Load training, test, and feature files
         train_df = pd.read_csv(f"data/{city}_train.csv")
         test_df = pd.read_csv(f"data/{city}_test.csv")
-        feature_df = pd.read_csv(f"data/{city}_features.csv")
+        feature_df = pd.read_csv(f"data/features/{city}_features.csv")
 
         # Standardize column name: change image_name to id for merging
         if 'image_name' in train_df.columns:
