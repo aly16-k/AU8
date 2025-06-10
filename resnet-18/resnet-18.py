@@ -19,13 +19,13 @@ def seed_everything(seed=42):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-seed_everything(42)  # You can modify the seed value
+seed_everything(42)  
 
 # ==== Parameters and Paths ====
 image_dir = "data/images/Adelaide"
 train_csv = "data/downstream_task/Adelaide_train.csv"
 test_csv = "data/downstream_task/Adelaide_test.csv"
-target_variable = "Median_price_of_established_house_transfers__2023_log"  # You can modify to any target indicator
+target_variable = "Median_price_of_established_house_transfers__2023_log"  
 
 # ==== Load Data ====
 train_df = pd.read_csv(train_csv)
