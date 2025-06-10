@@ -7,7 +7,7 @@ from PIL import Image
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from xgboost import XGBRegressor
@@ -48,20 +48,40 @@ model.eval()
 # ---------------------------
 # 4. Feature extraction function
 # ---------------------------
-def extract_features(image_folder, df, image_column):
-    features = []
-    for img_name in tqdm(df[image_column], desc="Extracting features"):
-        img_path = os.path.join(image_folder, img_name)
+# ---------------------------
+# 4. Feature extraction function (batch version)
+# ---------------------------
+class Tile2VecDataset(Dataset):
+    def __init__(self, df, image_folder, image_column):
+        self.df = df
+        self.image_folder = image_folder
+        self.image_column = image_column
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        img_name = self.df.iloc[idx][self.image_column]
+        img_path = os.path.join(self.image_folder, img_name)
         img = Image.open(img_path).convert('RGB')
         img = img.resize((640, 640))
         img = np.array(img)
         img = torch.from_numpy(img).permute(2, 0, 1).float() / 255.0
-        img = img.unsqueeze(0).to(device)
+        return img, img_name
 
-        with torch.no_grad():
-            feat = model(img)
-        features.append(feat.cpu().numpy().flatten())
-    return np.array(features)
+def extract_features(image_folder, df, image_column, batch_size=64):
+    dataset = Tile2VecDataset(df, image_folder, image_column)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=4)
+
+    features = []
+    model.eval()
+    with torch.no_grad():
+        for batch_imgs, _ in tqdm(dataloader, desc="Extracting features"):
+            batch_imgs = batch_imgs.to(device)
+            batch_feats = model(batch_imgs)
+            features.append(batch_feats.cpu().numpy())
+    return np.vstack(features)
+
 
 # ---------------------------
 # 5. Load data and extract features
