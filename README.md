@@ -157,7 +157,99 @@ python pca/PCA.py
 
 ---
 
+## 🏗️ ResNet18 Model
 
+This script uses a pretrained ResNet18 to extract image features and then trains an XGBoost regressor to predict the target urban indicator.
 
+### ▶️ Run the script
 
+```bash
+python resnet-18/resnet-18.py
+```
+
+### 🔍 What it does
+
+1. Loads `Adelaide_train.csv` and `Adelaide_test.csv` from `data/downstream_task/`.
+2. Loads satellite images from:  
+   ```
+   data/images/Adelaide/
+   ```
+3. Extracts 512-dimensional features using a frozen `ResNet18` model.
+4. Trains an `XGBoostRegressor` on training features and evaluates on the test set.
+5. Saves predictions and evaluation metrics.
+
+### 📄 Output
+
+- **Predicted results** saved to:  
+  ```
+  data/downstream_task/Adelaide_res/predicted_test_Median_price_of_established_house_transfers__2023_log.csv
+  ```
+
+- **Evaluation metrics** saved to:  
+  ```
+  data/downstream_task/Adelaide_evaluation_metrics.csv
+  ```
+
+  With metrics:
+  - R² (coefficient of determination)
+  - RMSE (Root Mean Square Error)
+  - MAE (Mean Absolute Error)
+
+---
+
+### ⚙️ Notes
+
+- Default target variable is:
+  ```
+  Median_price_of_established_house_transfers__2023_log
+  ```
+- You can change the `target_variable` in the script to evaluate other indicators.
+
+---
+
+## Tile2Vec Model
+
+This experiment trains a **Tile2Vec** model using triplet sampling and then uses the learned features for urban indicator prediction via XGBoost.
+
+### 1️⃣ Step 1: Train Tile2Vec Embedding Model
+
+Tile2Vec is trained using anchor-positive-negative image triplets based on spatial proximity.
+
+```bash
+python tile2vec/sample_triplet.py
+```
+
+**What it does:**
+- Samples image triplets from `data/images/Adelaide/` based on geo-coordinates.
+- Applies triplet loss to train a CNN encoder (`Tile2VecModel`) to embed similar images closer together.
+- Uses mixed precision (AMP) for faster training.
+- Saves the model to:
+  ```
+  tile2vec_model.pth
+  ```
+
+---
+
+### 2️⃣ Step 2: Predict Urban Indicators Using Extracted Features
+
+Uses the trained `Tile2VecModel` to extract image embeddings and predict a target indicator using XGBoost.
+
+```bash
+python tile2vec/tile2vec_predict.py
+```
+
+**What it does:**
+- Loads the pretrained model (`tile2vec_model.pth`).
+- Extracts features from all images in `Adelaide_train.csv` and `Adelaide_test.csv`.
+- Trains an XGBoost regressor on image embeddings.
+- Evaluates and saves results.
+
+**Output:**
+- 📊 Evaluation metrics printed to terminal (R², RMSE, MAE)
+- ✅ Prediction results saved to:
+  ```
+  Adelaide_prediction_tile2vec_xgb.csv
+  ```
+
+---
 
