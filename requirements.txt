@@ -1,0 +1,12 @@
+torch
+open_clip_torch
+numpy
+pandas
+scikit-learn
+tqdm
+loguru
+torchvision
+xgboost
+Pillow
+einops
+vit-pytorch
