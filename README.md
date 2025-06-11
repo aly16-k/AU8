@@ -33,7 +33,7 @@ Before running, make sure you have installed all required dependencies:
 pip install -r requirements.txt
 ```
 
-## 🔧 UrbanCLIP
+## UrbanCLIP Model
 
 This directory provides instructions for running experiments using UrbanCLIP, including both pretraining (or finetuning) and downstream prediction tasks.
 
@@ -42,7 +42,7 @@ This directory provides instructions for running experiments using UrbanCLIP, in
 Train UrbanCLIP on satellite-caption data using:
 
 ```bash
-python main.py \
+python UrbanCLIP/main.py \
   --dataset Adelaide_captions \
   --epoch_num 100 \
   --batch_size 2 \
@@ -72,7 +72,7 @@ You can now use the pretrained `best_model.bin` to extract image features and pr
 Use image features from the pretrained UrbanCLIP model and train an XGBoost regressor:
 
 ```bash
-python xgboost.py \
+python UrbanCLIP/xgboost.py \
   --dataset Adelaide \
   --indicator Median_price_of_established_house_transfers__2023_log \
   --pretrained_model ./checkpoints/best_model.bin
@@ -90,7 +90,7 @@ python xgboost.py \
 Train an MLP on top of frozen UrbanCLIP features:
 
 ```bash
-python mlp.py \
+python UrbanCLIP/mlp.py \
   --dataset Adelaide \
   --indicator Median_price_of_established_house_transfers__2023_log \
   --pretrained_model ./checkpoints/best_model.bin
@@ -109,5 +109,55 @@ python mlp.py \
 - You must run `main.py` first to generate the pretrained model used in downstream tasks.
 - Set `--indicator` to the desired urban indicator for prediction (e.g., `Median_price_of_established_house_transfers__2023_log`).
 - Make sure your dataset files (e.g., `Adelaide_train.csv`, `Adelaide_test.csv`) are placed in `data/downstream_task/`.
+
+
+---
+
+## PCA Model
+
+This experiment extracts image features using a pretrained ResNet18 model, then applies PCA and linear regression for urban indicator prediction.
+
+### 1️⃣ Step 1: Extract ResNet18 Image Features
+
+This step loads images from each city and extracts features using a frozen ResNet18 model.
+
+```bash
+python pca/extract_features.py
+```
+
+**Input**:  
+- Image files should be placed in `data/images/{city}/` folders.
+
+**Output**:  
+- Extracted features saved to `data/features/{city}_features.csv` (one file per city).
+- Each CSV contains: `image_name`, followed by 512-dimensional ResNet18 features.
+
+---
+
+### 2️⃣ Step 2: Run PCA for Prediction
+
+Use the extracted features to train PCA + Linear Regression models for each city.
+
+```bash
+python pca/PCA.py
+```
+
+**What it does**:
+- Loads `*_train.csv` and `*_test.csv` from `data/`, and the corresponding feature files.
+- Merges on `image_name` (standardized to `id`).
+- Reduces feature dimension using PCA (retain 90% variance).
+- Trains a Linear Regression model and evaluates on test set.
+
+**Output**:
+- City-level results saved to:  
+  ```
+  Median_price_of_established_house_transfers__2023_log_results.csv
+  ```
+- Contains columns: `City`, `Train_R2`, `Train_MAE`, `Train_RMSE`, `Test_R2`, `Test_MAE`, `Test_RMSE`.
+
+---
+
+
+
 
 
