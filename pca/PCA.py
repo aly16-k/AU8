@@ -110,5 +110,5 @@ print("\n🎯 Summary results for all cities:")
 print(results_df)
 
 # Save to CSV
-results_df.to_csv("2016_Rural residential and farm infrastructure (ha)_mean_log.csv", index=False)
-print("\n✅ Results saved to 2016_Rural residential and farm infrastructure (ha)_mean_log.csv")
+results_df.to_csv(f"{target_col}_results.csv", index=False)
+print("\n✅ Results saved")
