@@ -33,7 +33,7 @@ Before running, make sure you have installed all required dependencies:
 pip install -r requirements.txt
 ```
 
-## UrbanCLIP Model
+## 1. UrbanCLIP Model
 
 This directory provides instructions for running experiments using UrbanCLIP, including both pretraining (or finetuning) and downstream prediction tasks.
 
@@ -113,7 +113,7 @@ python UrbanCLIP/mlp.py \
 
 ---
 
-## PCA Model
+## 2. PCA Model
 
 This experiment extracts image features using a pretrained ResNet18 model, then applies PCA and linear regression for urban indicator prediction.
 
@@ -157,7 +157,7 @@ python pca/PCA.py
 
 ---
 
-## 🏗️ ResNet18 Model
+## 3. ResNet18 Model
 
 This script uses a pretrained ResNet18 to extract image features and then trains an XGBoost regressor to predict the target urban indicator.
 
@@ -207,7 +207,7 @@ python resnet-18/resnet-18.py
 
 ---
 
-## Tile2Vec Model
+## 4. Tile2Vec Model
 
 This experiment trains a **Tile2Vec** model using triplet sampling and then uses the learned features for urban indicator prediction via XGBoost.
 
