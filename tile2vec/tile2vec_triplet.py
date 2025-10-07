@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # Tile2Vec training script for 68x68, 4-channel (B2,B3,B4,B8) 16-bit GeoTIFF (tifffile version)
-# Dependencies: pip install tifffile tqdm torch
 
 import os
 import math
@@ -250,3 +249,4 @@ if __name__ == '__main__':
 
         del model, optimizer, dataloader
         torch.cuda.empty_cache()
+
