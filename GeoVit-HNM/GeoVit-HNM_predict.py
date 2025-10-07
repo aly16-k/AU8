@@ -103,7 +103,7 @@ class Transformer(nn.Module):
             x = ff(x) + x
         return self.norm(x)
 
-class Tile2VecHybrid(nn.Module):
+class HNM(nn.Module):
     """
     Aligned with training script:
     - Four-channel input (B2, B3, B4, B8)
@@ -250,7 +250,7 @@ if __name__ == "__main__":
 
     for city in cities:
         # Build model (same as training)
-        model = Tile2VecHybrid(embedding_dim=embedding_dim).to(device)
+        model = HNM(embedding_dim=embedding_dim).to(device)
         model.eval()
 
         # Weight loading: prefer city-specific, otherwise generic
@@ -314,3 +314,4 @@ if __name__ == "__main__":
     results_df.to_csv("HNM_results.csv", index=False)
     print("All results saved to HNM_results.csv")
     print(f"Total rows saved: {len(results_df)}")
+
