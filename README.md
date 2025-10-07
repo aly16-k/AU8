@@ -1,6 +1,6 @@
 # The AU8 Benchmark Dataset
 
-This is the code repository for our paper, “AU8: A Multimodal Benchmark Dataset from Eight Australian Cities for Sustainable Urban Development”. AU8 comprises eight major Australian cities including Greater Sydney, Greater Melbourne, Greater Brisbane, Greater Perth, Greater Adelaide, Greater Canberra, Greater Darwin, and Greater Hobart and contains 101,604 satellite image tiles, each paired with a declarative textual description and nine key urban indicators (e.g., population density, median income, housing price, land use).
+This is the code repository for our paper, “AU8: A Multimodal Benchmark Dataset from Eight Australian Cities for Urban Profiling and Analysis”. AU8 comprises eight major Australian cities including Greater Sydney, Greater Melbourne, Greater Brisbane, Greater Perth, Greater Adelaide, Greater Canberra, Greater Darwin, and Greater Hobart and contains 101,604 satellite image tiles, each paired with a declarative textual description and nine key urban indicators (e.g., population density, median income, housing price, land use). The dataset is available at https://huggingface.co/datasets/jjjtyxxx/AU8.
 
 
 In AU8 we also provide comprehensive metadata for all Images, which are listed below.
@@ -33,223 +33,85 @@ Before running, make sure you have installed all required dependencies:
 pip install -r requirements.txt
 ```
 
-## 1. UrbanCLIP Model
+---
 
-This directory provides instructions for running experiments using UrbanCLIP, including both pretraining (or finetuning) and downstream prediction tasks.
+## 🚀 Quick Start
 
-### 1️⃣ Pretrain / Finetune UrbanCLIP
+Each method has a simple two-step (train → predict) or one-step pipeline.
 
-Train UrbanCLIP on satellite-caption data using:
+---
+
+## 1️⃣ UrbanCLIP
+
+**Step 1: Train UrbanCLIP**
 
 ```bash
-python UrbanCLIP/main.py \
-  --dataset Adelaide_captions \
-  --epoch_num 100 \
-  --batch_size 2 \
-  --pretrained_model laion-mscoco_finetuned_CoCa-ViT-L-14-laion2B-s13B-b90k/open_clip_pytorch_model.bin
+python UrbanCLIP/main.py
 ```
 
-📝 The best model will be saved to:
-
-```
-checkpoints/best_model.bin
-```
-
-Logs will be stored in:
-
-```
-logs/{seed}.log
-```
-
----
-
-### 2️⃣ Downstream Tasks
-
-You can now use the pretrained `best_model.bin` to extract image features and predict various urban indicators.
-
-#### a. XGBoost Regression
-
-Use image features from the pretrained UrbanCLIP model and train an XGBoost regressor:
+**Step 2: Predict with pretrained model**
 
 ```bash
-python UrbanCLIP/xgboost.py \
-  --dataset Adelaide \
-  --indicator Median_price_of_established_house_transfers__2023_log \
-  --pretrained_model ./checkpoints/best_model.bin
+python UrbanCLIP/UrbanCLIP_predict.py
 ```
-
-**Output:**
-
-- Predictions: `data/downstream_task/Adelaide_urbxg/Adelaide_test_predicted.csv`
-- Evaluation metrics: `data/downstream_task/Adelaide_evaluation_metrics.csv`
 
 ---
 
-#### b. MLP Linear Probe
+## 2️⃣ GeoVit-HNM
 
-Train an MLP on top of frozen UrbanCLIP features:
+**Step 1: Train GeoVit-HNM**
 
 ```bash
-python UrbanCLIP/mlp.py \
-  --dataset Adelaide \
-  --indicator Median_price_of_established_house_transfers__2023_log \
-  --pretrained_model ./checkpoints/best_model.bin
+python GeoVit-HNM/GeoVit-HNM.py
 ```
 
-**Output:**
-
-- Predictions: `data/downstream_task/Adelaide_test_predicted.csv`
-- Logs: `logs/downtask1/132.log`
-
----
-
-
-### 📌 Notes
-
-- You must run `main.py` first to generate the pretrained model used in downstream tasks.
-- Set `--indicator` to the desired urban indicator for prediction (e.g., `Median_price_of_established_house_transfers__2023_log`).
-- Make sure your dataset files (e.g., `Adelaide_train.csv`, `Adelaide_test.csv`) are placed in `data/downstream_task/`.
-
-
----
-
-## 2. PCA Model
-
-This experiment extracts image features using a pretrained ResNet18 model, then applies PCA and linear regression for urban indicator prediction.
-
-### 1️⃣ Step 1: Extract ResNet18 Image Features
-
-This step loads images from each city and extracts features using a frozen ResNet18 model.
+**Step 2: Predict with trained model**
 
 ```bash
-python pca/extract_features.py
+python GeoVit-HNM/GeoVit-HNM_predict.py
 ```
-
-**Input**:  
-- Image files should be placed in `data/images/{city}/` folders.
-
-**Output**:  
-- Extracted features saved to `data/features/{city}_features.csv` (one file per city).
-- Each CSV contains: `image_name`, followed by 512-dimensional ResNet18 features.
 
 ---
 
-### 2️⃣ Step 2: Run PCA for Prediction
+## 3️⃣ Tile2Vec
 
-Use the extracted features to train PCA + Linear Regression models for each city.
+**Step 1: Train Tile2Vec embeddings**
 
 ```bash
-python pca/PCA.py
+python tile2vec/tile2vec_triplet.py
 ```
 
-**What it does**:
-- Loads `*_train.csv` and `*_test.csv` from `data/`, and the corresponding feature files.
-- Merges on `image_name` (standardized to `id`).
-- Reduces feature dimension using PCA (retain 90% variance).
-- Trains a Linear Regression model and evaluates on test set.
-
-**Output**:
-- City-level results saved to:  
-  ```
-  Median_price_of_established_house_transfers__2023_log_results.csv
-  ```
-- Contains columns: `City`, `Train_R2`, `Train_MAE`, `Train_RMSE`, `Test_R2`, `Test_MAE`, `Test_RMSE`.
-
----
-
-## 3. ResNet18 Model
-
-This script uses a pretrained ResNet18 to extract image features and then trains an XGBoost regressor to predict the target urban indicator.
-
-### ▶️ Run the script
-
-```bash
-python resnet-18/resnet-18.py
-```
-
-### 🔍 What it does
-
-1. Loads `Adelaide_train.csv` and `Adelaide_test.csv` from `data/downstream_task/`.
-2. Loads satellite images from:  
-   ```
-   data/images/Adelaide/
-   ```
-3. Extracts 512-dimensional features using a frozen `ResNet18` model.
-4. Trains an `XGBoostRegressor` on training features and evaluates on the test set.
-5. Saves predictions and evaluation metrics.
-
-### 📄 Output
-
-- **Predicted results** saved to:  
-  ```
-  data/downstream_task/Adelaide_res/predicted_test_Median_price_of_established_house_transfers__2023_log.csv
-  ```
-
-- **Evaluation metrics** saved to:  
-  ```
-  data/downstream_task/Adelaide_evaluation_metrics.csv
-  ```
-
-  With metrics:
-  - R² (coefficient of determination)
-  - RMSE (Root Mean Square Error)
-  - MAE (Mean Absolute Error)
-
----
-
-### ⚙️ Notes
-
-- Default target variable is:
-  ```
-  Median_price_of_established_house_transfers__2023_log
-  ```
-- You can change the `target_variable` in the script to evaluate other indicators.
-
----
-
-## 4. Tile2Vec Model
-
-This experiment trains a **Tile2Vec** model using triplet sampling and then uses the learned features for urban indicator prediction via XGBoost.
-
-### 1️⃣ Step 1: Train Tile2Vec Embedding Model
-
-Tile2Vec is trained using anchor-positive-negative image triplets based on spatial proximity.
-
-```bash
-python tile2vec/sample_triplet.py
-```
-
-**What it does:**
-- Samples image triplets from `data/images/Adelaide/` based on geo-coordinates.
-- Applies triplet loss to train a CNN encoder (`Tile2VecModel`) to embed similar images closer together.
-- Uses mixed precision (AMP) for faster training.
-- Saves the model to:
-  ```
-  tile2vec_model.pth
-  ```
-
----
-
-### 2️⃣ Step 2: Predict Urban Indicators Using Extracted Features
-
-Uses the trained `Tile2VecModel` to extract image embeddings and predict a target indicator using XGBoost.
+**Step 2: Predict urban indicators**
 
 ```bash
 python tile2vec/tile2vec_predict.py
 ```
 
-**What it does:**
-- Loads the pretrained model (`tile2vec_model.pth`).
-- Extracts features from all images in `Adelaide_train.csv` and `Adelaide_test.csv`.
-- Trains an XGBoost regressor on image embeddings.
-- Evaluates and saves results.
+---
 
-**Output:**
-- 📊 Evaluation metrics printed to terminal (R², RMSE, MAE)
-- ✅ Prediction results saved to:
-  ```
-  Adelaide_prediction_tile2vec_xgb.csv
-  ```
+## 4️⃣ PCA
+
+Run PCA + Linear Regression directly:
+
+```bash
+python pca/PCA.py
+```
 
 ---
+
+## 5️⃣ ResNet18
+
+Run ResNet18 + XGBoost directly:
+
+```bash
+python resnet-18/resnet-18.py
+```
+
+---
+
+## 📌 Notes
+
+- Training scripts automatically save model checkpoints.  
+- Prediction scripts output evaluation metrics and prediction results.  
+- Make sure your dataset files are placed in the correct `data/` directory.  
 
