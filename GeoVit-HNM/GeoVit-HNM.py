@@ -1,4 +1,3 @@
-##!!! final version
 
 import os
 import random
