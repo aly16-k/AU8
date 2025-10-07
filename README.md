@@ -1,6 +1,6 @@
 # The AU8 Benchmark Dataset
 
-This is the code repository for our paper, “AU8: A Multimodal Benchmark Dataset from Eight Australian Cities for Urban Profiling and Analysis”. AU8 comprises eight major Australian cities including Greater Sydney, Greater Melbourne, Greater Brisbane, Greater Perth, Greater Adelaide, Greater Canberra, Greater Darwin, and Greater Hobart and contains 101,604 satellite image tiles, each paired with a declarative textual description and nine key urban indicators (e.g., population density, median income, housing price, land use). The dataset is available at https://huggingface.co/datasets/jjjtyxxx/AU8.
+This is the code repository for our paper, “AU8: A Multimodal Benchmark Dataset from Eight Australian Cities for Urban Profiling and Analysis”. AU8 comprises eight major Australian cities including Greater Sydney, Greater Melbourne, Greater Brisbane, Greater Perth, Greater Adelaide, Greater Canberra, Greater Darwin, and Greater Hobart and contains 101,604 satellite image tiles, each paired with a declarative textual description and nine key urban indicators (e.g., population density, median income, housing price, land use). The dataset is available at https://huggingface.co/datasets/anonymous-for-review/AU8.
 
 
 In AU8 we also provide comprehensive metadata for all Images, which are listed below.
