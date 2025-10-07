@@ -91,7 +91,7 @@ python tile2vec/tile2vec_predict.py
 
 ## 4️⃣ PCA
 
-Run PCA + Linear Regression directly:
+Run PCA + XGBoost directly:
 
 ```bash
 python pca/PCA.py
