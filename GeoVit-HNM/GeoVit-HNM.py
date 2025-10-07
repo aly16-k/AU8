@@ -173,10 +173,10 @@ class Transformer(nn.Module):
         return self.norm(x)
 
 # ---------------------------
-# Hybrid CNN-ViT Tile2Vec Model
+# GeoVit-HNM Model
 # ---------------------------
 
-class Tile2VecHybrid(nn.Module):
+class HNM(nn.Module):
     def __init__(self, image_size=68, patch_size=4, dim=256, depth=4, heads=4, mlp_dim=512, dim_head=64, emb_dropout=0.1, dropout=0.1, embedding_dim=128):
         super().__init__()
 
@@ -262,7 +262,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # image_size=68, patch_size=8 to match 8x8 feature map after downsampling
-    model = Tile2VecHybrid(image_size=68, patch_size=4, embedding_dim=embedding_dim).to(device)
+    model = HNM(image_size=68, patch_size=4, embedding_dim=embedding_dim).to(device)
 
     triplet_loss = nn.TripletMarginLoss(margin=1.0, p=2)
     optimizer = optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-4)
